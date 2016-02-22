@@ -12,7 +12,7 @@ $ ✓ gif copied to clipboard
 ## Installation
 
 ```bash
-$ go get github.com/michaelhue/rgif
+$ go get -u github.com/michaelhue/rgif
 ```
 
 **Please note:** This is written by a Go noob. Don't hate, share your wisdom!
