@@ -5,14 +5,14 @@ The right gif, every time, in your command line.
 ## Usage
 
 ```bash
-$ rgif so excited
-$ ✓ gif copied to clipboard
+rgif so excited
+✓ gif copied to clipboard
 ```
 
 ## Installation
 
 ```bash
-$ go get -u github.com/michaelhue/rgif
+go get -u github.com/michaelhue/rgif
 ```
 
 **Please note:** This is written by a Go noob. Don't hate, share your wisdom!
