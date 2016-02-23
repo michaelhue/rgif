@@ -1,13 +1,15 @@
-// Package main implements a command line interface
+// Package main implements a command-line interface
 // for quickly fetching a gif matching a search query.
 package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/briandowns/spinner"
 	"github.com/dustin/go-humanize"
+	"github.com/skratchdot/open-golang/open"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,6 +22,12 @@ import (
 // URL to Realgif API endpoint.
 var EndpointUrl = "https://rightgif.com/search/web"
 
+// Command-line flags.
+var (
+	urlFlag  bool // print url only
+	openFlag bool // open url
+)
+
 // Gif holds information about a gif response.
 type Gif struct {
 	Url  string // gif url
@@ -28,10 +36,13 @@ type Gif struct {
 
 // Print help text.
 func printHelp() {
-	fmt.Println("The right gif, every time, in your command line!")
-	fmt.Println("Powered by rightgif.com\n")
-	fmt.Println("Usage: rgif [query]\n")
-	fmt.Println("  rgif oh boy\n  rgif whatever\n  rgif \"can't touch this!\"\n")
+	fmt.Println("The right gif, every time, in your command-line")
+	fmt.Println("\nUsage:\n  rgif [flags] [query]")
+	fmt.Println("\nFlags:")
+	fmt.Println("  -u    print url only")
+	fmt.Println("  -o    open in default browser")
+	fmt.Println("\nExamples:")
+	fmt.Println("  rgif oh boy\n  rgif -o whatever\n  rgif -u \"can't touch this!\"\n")
 }
 
 // Get content length from a HEAD request to given uri.
@@ -73,6 +84,13 @@ func search(query string) (Gif, error) {
 	return gif, nil
 }
 
+// Init flags.
+func init() {
+	flag.BoolVar(&urlFlag, "u", false, "print url only")
+	flag.BoolVar(&openFlag, "o", false, "open url in browser")
+	flag.Parse()
+}
+
 // Main program.
 func main() {
 	args := os.Args[1:]
@@ -83,8 +101,10 @@ func main() {
 		return
 	}
 
-	spin := spinner.New(spinner.CharSets[4], 125*time.Millisecond)
-	spin.Start()
+	spin := spinner.New(spinner.CharSets[28], 120*time.Millisecond)
+	if !urlFlag {
+		spin.Start()
+	}
 
 	gif, err := search(query)
 	if err != nil {
@@ -93,6 +113,16 @@ func main() {
 
 	spin.Stop()
 	clipboard.WriteAll(gif.Url)
+
+	if urlFlag {
+		fmt.Printf(gif.Url)
+		return
+	}
+
 	fmt.Printf("✓ gif copied to clipboard (%s)\n",
 		humanize.Bytes(gif.Size))
+
+	if openFlag {
+		open.Run(gif.Url)
+	}
 }
