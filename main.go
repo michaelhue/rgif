@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/dustin/go-humanize"
+	"github.com/briandowns/spinner"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Gif holds information about a gif response.
@@ -74,11 +76,15 @@ func main() {
 		return
 	}
 
+	spin := spinner.New(spinner.CharSets[4], 125*time.Millisecond)
+	spin.Start()
+
 	gif, err := search(query)
 	if err != nil {
 		panic(err)
 	}
 
+	spin.Stop()
 	clipboard.WriteAll(gif.Url)
 	fmt.Printf("✓ gif copied to clipboard (%s)\n",
 		humanize.Bytes(gif.Size))
