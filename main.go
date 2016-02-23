@@ -3,9 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/atotto/clipboard"
-	"github.com/dustin/go-humanize"
-	"github.com/briandowns/spinner"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -13,6 +10,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/atotto/clipboard"
+	"github.com/briandowns/spinner"
+	"github.com/dustin/go-humanize"
 )
 
 // Gif holds information about a gif response.
@@ -29,13 +30,13 @@ func printHelp() {
 }
 
 // Get content length from a HEAD request to given uri.
-func getContentLength(uri string) (uint64) {
+func getContentLength(uri string) uint64 {
 	resp, err := http.Head(uri)
-	defer resp.Body.Close()
 	if err != nil {
 		return 0
 	}
-	
+	defer resp.Body.Close()
+
 	length, err := strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
 	if err != nil {
 		return 0
@@ -49,10 +50,10 @@ func search(query string) (Gif, error) {
 
 	resp, err := http.PostForm("https://rightgif.com/search/web",
 		url.Values{"text": {query}})
-	defer resp.Body.Close()
 	if err != nil {
 		return gif, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -62,7 +63,7 @@ func search(query string) (Gif, error) {
 		return gif, err
 	}
 	gif.Size = getContentLength(gif.Url)
-	
+
 	return gif, nil
 }
 
