@@ -13,35 +13,15 @@ import (
 	"strings"
 )
 
-type ApiResponse struct {
-	Url string // gif url
+type Gif struct {
+	Url  string // gif url
+	Size uint64 // file size in bytes
 }
 
-func help() {
+func printHelp() {
 	fmt.Println("The right gif, every time, in your command line!\nPowered by rightgif.com\n")
 	fmt.Println("Usage: rgif [query]\n")
 	fmt.Println("$ rgif oh boy\n$ rgif whatever\n$ rgif no no no\n")
-}
-
-func search(query string) (string, error) {
-	var data ApiResponse
-
-	resp, err := http.PostForm("https://rightgif.com/search/web",
-		url.Values{"text": {query}})
-	defer resp.Body.Close()
-	if err != nil {
-		return "", err
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if err = json.Unmarshal(body, &data); err != nil {
-		return "", err
-	}
-
-	return data.Url, nil
 }
 
 func getContentLength(uri string) (uint64) {
@@ -58,22 +38,43 @@ func getContentLength(uri string) (uint64) {
 	return length
 }
 
+func search(query string) (Gif, error) {
+	var gif Gif
+
+	resp, err := http.PostForm("https://rightgif.com/search/web",
+		url.Values{"text": {query}})
+	defer resp.Body.Close()
+	if err != nil {
+		return gif, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return gif, err
+	}
+	if err = json.Unmarshal(body, &gif); err != nil {
+		return gif, err
+	}
+	gif.Size = getContentLength(gif.Url)
+	
+	return gif, nil
+}
+
 func main() {
 	args := os.Args[1:]
 	query := strings.Join(args, " ")
 
 	if len(args) == 0 {
-		help()
+		printHelp()
 		return
 	}
 
-	uri, err := search(query)
+	gif, err := search(query)
 	if err != nil {
 		panic(err)
 	}
-	size := getContentLength(uri)
 
-	clipboard.WriteAll(uri)
+	clipboard.WriteAll(gif.Url)
 	fmt.Printf("✓ gif copied to clipboard (%s)\n",
-		humanize.Bytes(size))
+		humanize.Bytes(gif.Size))
 }
