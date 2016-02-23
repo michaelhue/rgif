@@ -48,10 +48,10 @@ func printHelp() {
 // Get content length from a HEAD request to given uri.
 func getContentLength(uri string) uint64 {
 	resp, err := http.Head(uri)
-	defer resp.Body.Close()
 	if err != nil {
 		return 0
 	}
+	defer resp.Body.Close()
 
 	length := resp.Header.Get("Content-Length")
 	bytes, err := strconv.ParseUint(length, 10, 64)
@@ -65,12 +65,11 @@ func getContentLength(uri string) uint64 {
 func search(query string) (Gif, error) {
 	var gif Gif
 
-	resp, err := http.PostForm(EndpointUrl,
-		url.Values{"text": {query}})
-	defer resp.Body.Close()
+	resp, err := http.PostForm(EndpointUrl, url.Values{"text": {query}})
 	if err != nil {
 		return gif, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -118,7 +117,6 @@ func main() {
 		fmt.Printf(gif.Url)
 		return
 	}
-
 	fmt.Printf("✓ gif copied to clipboard (%s)\n",
 		humanize.Bytes(gif.Size))
 
