@@ -1,11 +1,13 @@
+// Package main implements a command line interface
+// for quickly fetching a gif matching a search query.
 package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/atotto/clipboard"
-	"github.com/dustin/go-humanize"
 	"github.com/briandowns/spinner"
+	"github.com/dustin/go-humanize"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -15,6 +17,9 @@ import (
 	"time"
 )
 
+// URL to Realgif API endpoint.
+var EndpointUrl = "https://rightgif.com/search/web"
+
 // Gif holds information about a gif response.
 type Gif struct {
 	Url  string // gif url
@@ -23,31 +28,33 @@ type Gif struct {
 
 // Print help text.
 func printHelp() {
-	fmt.Println("The right gif, every time, in your command line!\nPowered by rightgif.com\n")
+	fmt.Println("The right gif, every time, in your command line!")
+	fmt.Println("Powered by rightgif.com\n")
 	fmt.Println("Usage: rgif [query]\n")
-	fmt.Println("$ rgif oh boy\n$ rgif whatever\n$ rgif no no no\n")
+	fmt.Println("  rgif oh boy\n  rgif whatever\n  rgif \"can't touch this!\"\n")
 }
 
 // Get content length from a HEAD request to given uri.
-func getContentLength(uri string) (uint64) {
+func getContentLength(uri string) uint64 {
 	resp, err := http.Head(uri)
 	defer resp.Body.Close()
 	if err != nil {
 		return 0
 	}
-	
-	length, err := strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
+
+	length := resp.Header.Get("Content-Length")
+	bytes, err := strconv.ParseUint(length, 10, 64)
 	if err != nil {
 		return 0
 	}
-	return length
+	return bytes
 }
 
 // Make a search request to the api and return a gif.
 func search(query string) (Gif, error) {
 	var gif Gif
 
-	resp, err := http.PostForm("https://rightgif.com/search/web",
+	resp, err := http.PostForm(EndpointUrl,
 		url.Values{"text": {query}})
 	defer resp.Body.Close()
 	if err != nil {
@@ -62,7 +69,7 @@ func search(query string) (Gif, error) {
 		return gif, err
 	}
 	gif.Size = getContentLength(gif.Url)
-	
+
 	return gif, nil
 }
 
