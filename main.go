@@ -13,17 +13,20 @@ import (
 	"strings"
 )
 
+// Gif holds information about a gif response.
 type Gif struct {
 	Url  string // gif url
 	Size uint64 // file size in bytes
 }
 
+// Print help text.
 func printHelp() {
 	fmt.Println("The right gif, every time, in your command line!\nPowered by rightgif.com\n")
 	fmt.Println("Usage: rgif [query]\n")
 	fmt.Println("$ rgif oh boy\n$ rgif whatever\n$ rgif no no no\n")
 }
 
+// Get content length from a HEAD request to given uri.
 func getContentLength(uri string) (uint64) {
 	resp, err := http.Head(uri)
 	defer resp.Body.Close()
@@ -38,6 +41,7 @@ func getContentLength(uri string) (uint64) {
 	return length
 }
 
+// Make a search request to the api and return a gif.
 func search(query string) (Gif, error) {
 	var gif Gif
 
@@ -60,6 +64,7 @@ func search(query string) (Gif, error) {
 	return gif, nil
 }
 
+// Main program.
 func main() {
 	args := os.Args[1:]
 	query := strings.Join(args, " ")
