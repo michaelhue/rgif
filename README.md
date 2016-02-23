@@ -6,7 +6,7 @@ The right gif, every time, in your command line.
 
 ```bash
 rgif so excited
-✓ gif copied to clipboard
+✓ gif copied to clipboard (551 kB)
 ```
 
 ## Installation

@@ -4,41 +4,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/atotto/clipboard"
+	"github.com/dustin/go-humanize"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
-type Response struct {
-	Url string
+type ApiResponse struct {
+	Url string // gif url
 }
 
 func help() {
 	fmt.Println("The right gif, every time, in your command line!\nPowered by rightgif.com\n")
 	fmt.Println("Usage: rgif [query]\n")
-	fmt.Println("> rgif oh boy\n> rgif whatever\n> rgif no no no\n")
+	fmt.Println("$ rgif oh boy\n$ rgif whatever\n$ rgif no no no\n")
 }
 
 func search(query string) string {
-	var data Response
+	var data ApiResponse
 
 	resp, err := http.PostForm("https://rightgif.com/search/web",
 		url.Values{"text": {query}})
-
+	defer resp.Body.Close()
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
 
-	err = json.Unmarshal(body, &data)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		panic(err)
+	}
+
+	if err = json.Unmarshal(body, &data); err != nil {
 		panic(err)
 	}
 
 	return data.Url
+}
+
+func getContentLength(url string) (uint64, error) {
+	resp, err := http.Head(url)
+	defer resp.Body.Close()
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
 }
 
 func main() {
@@ -50,7 +63,13 @@ func main() {
 		return
 	}
 
-	url := search(query)
+	url := Search(query)
+	length, err := getContentLength(url)
+	if err != nil {
+		panic(err)
+	}
+
 	clipboard.WriteAll(url)
-	fmt.Println("✓ gif copied to clipboard")
+	fmt.Printf("✓ gif copied to clipboard (%s)\n",
+		humanize.Bytes(length))
 }
