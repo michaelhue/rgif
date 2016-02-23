@@ -23,35 +23,39 @@ func help() {
 	fmt.Println("$ rgif oh boy\n$ rgif whatever\n$ rgif no no no\n")
 }
 
-func search(query string) string {
+func search(query string) (string, error) {
 	var data ApiResponse
 
 	resp, err := http.PostForm("https://rightgif.com/search/web",
 		url.Values{"text": {query}})
 	defer resp.Body.Close()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-
 	if err = json.Unmarshal(body, &data); err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return data.Url
+	return data.Url, nil
 }
 
-func getContentLength(url string) (uint64, error) {
-	resp, err := http.Head(url)
+func getContentLength(uri string) (uint64) {
+	resp, err := http.Head(uri)
 	defer resp.Body.Close()
 	if err != nil {
-		return 0, err
+		return 0
 	}
-	return strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
+	
+	length, err := strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return length
 }
 
 func main() {
@@ -63,13 +67,13 @@ func main() {
 		return
 	}
 
-	url := Search(query)
-	length, err := getContentLength(url)
+	uri, err := search(query)
 	if err != nil {
 		panic(err)
 	}
+	size := getContentLength(uri)
 
-	clipboard.WriteAll(url)
+	clipboard.WriteAll(uri)
 	fmt.Printf("✓ gif copied to clipboard (%s)\n",
-		humanize.Bytes(length))
+		humanize.Bytes(size))
 }
