@@ -3,14 +3,14 @@
 The right gif, every time, in your command-line.  
 _Powered by [rightgif.com](https://rightgif.com)_
 
-```shell
+```
 rgif so excited
 ✓ gif copied to clipboard (551 kB)
 ```
 
 ## How to use
 
-```shell
+```
 Usage:
   rgif [flags] [query]
 
@@ -26,7 +26,7 @@ Examples:
 
 ## Installation
 
-```shell
+```
 go get -u github.com/michaelhue/rgif
 ```
 
